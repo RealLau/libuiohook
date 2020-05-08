@@ -1,0 +1,124 @@
+name: build-binaires
+on:
+  push:
+    branches:
+      - cmake
+
+jobs:
+#  build_apple_x86_64:
+#    runs-on: macos-latest
+#    steps:
+#      - name: Checkout
+#      - uses: actions/checkout@v1
+#        with:
+#          submodules: true
+#
+#      - name: Compile
+#        uses: lukka/run-cmake@v2.4
+#        with:
+#          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+#          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+#          cmakeAppendedArgs: '-DCMAKE_OSX_ARCHITECTURES=386 -DCMAKE_VERBOSE_MAKEFILE=true -DENABLE_STATIC=ON -DENABLE_SHARED=ON'
+#          buildDirectory: ${{ github.workspace }}/build/
+#
+#      - name: Upload
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name:
+#          path: ${{ github.workspace }}/build/*uiohook.*
+
+  build_linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Setup
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update -m
+          sudo apt-get install \
+            build-essential \
+            gcc-multilib \
+            multiarch-support \
+            libx11-dev \
+            libxtst-dev \
+            libxt-dev \
+            libxinerama-dev \
+            libx11-xcb-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev \
+            libxkbfile-dev \
+            libx11-dev:i386 \
+            libxtst-dev:i386 \
+            libxt-dev:i386 \
+            libxinerama-dev:i386 \
+            libx11-xcb-dev:i386 \
+            libxkbcommon-dev:i386 \
+            libxkbcommon-x11-dev:i386 \
+            libxkbfile-dev:i386
+        shell: bash
+
+      - name: Compile i686
+        uses: lukka/run-cmake@v2.4
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeListsTxtPath: ${{ github.workspace }}/CMakeLists.txt
+          cmakeAppendedArgs: '-DCMAKE_C_FLAGS="-m32 -march=i386 -O2 -g -fomit-frame-pointer -fno-stack-protector -pipe" -DCMAKE_SHARED_LINKER_FLAGS="-m32 -Wl,-O1 -Wl,--as-needed" -DCMAKE_VERBOSE_MAKEFILE=true -DENABLE_STATIC=ON -DENABLE_SHARED=ON'
+          buildDirectory: ${{ github.workspace }}/build/i686/
+#
+#      - name: Upload i686
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: i686-linux-gnu
+#          path: ${{ github.workspace }}/build/i686/*uiohook.*
+
+
+      - name: Compile x86-64
+        uses: lukka/run-cmake@v2.4
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          cmakeListsTxtPath: ${{ github.workspace }}/CMakeLists.txt
+          cmakeAppendedArgs: '-DCMAKE_C_FLAGS="-march=x86-64 -O2 -g -fomit-frame-pointer -fno-stack-protector -pipe" -DCMAKE_VERBOSE_MAKEFILE=true -DENABLE_STATIC=ON -DENABLE_SHARED=ON'
+          buildDirectory: ${{ github.workspace }}/build/x86-64/
+
+      - name: Upload x86-64
+        uses: actions/upload-artifact@v2
+        with:
+          name: x86_64-linux-gnu
+          path: ${{ github.workspace }}/build/x86-64/*uiohook.*
+
+#  build_windows:
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v1
+#        with:
+#          submodules: true
+#
+#      - name: Setup MSVC x86_64
+#        if: runner.os == 'Windows'
+#        uses: ilammy/msvc-dev-cmd@v1
+#        with:
+#          arch: x64
+#
+#      - name: Compile
+#        uses: lukka/run-cmake@v2.4
+#        with:
+#          cmakeListsOrSettingsJson: CMakeListsTxtBasic
+#          cmakeAppendedArgs: '-DENABLE_STATIC=ON'
+#          buildWithCMakeArgs: '-- -v'
+#          buildDirectory: ${{ github.workspace }}/build/
+#
+#      - name: Upload Library Artifact
+#        uses: actions/upload-artifact@v1
+#        with:
+#          name: uiohook.dll
+#          path: ${{ github.workspace }}/build/uiohook.dll
+#
+#      - name: Upload Archive Artifact
+#          uses: actions/upload-artifact@v1
+#          with:
+#            name: uiohook.a
+#            path: ${{ github.workspace }}/build/uiohook.a
